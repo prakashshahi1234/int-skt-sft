@@ -1,36 +1,36 @@
-// script.js
-document.getElementById('searchBtn').addEventListener('click', function() {
-    const recipeQuery = document.getElementById('recipeInput').value;
-    const apiUrl = `https://www.themealdb.com/api/json/v1/1/search.php?s=${recipeQuery}`;
+const apiKey = '227744ba31033553d037fc4f3aedaf9a'; // Replace with your OpenWeather API key
 
-    fetch(apiUrl)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Something went wrong');
-            }
-            return response.json();
-        })
+document.getElementById('getWeatherBtn').addEventListener('click', () => {
+    const city = document.getElementById('cityInput').value;
+    if (city) {
+        getWeather(city);
+    }
+});
+
+function getWeather(city) {
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+    
+    fetch(url)
+        .then(response => response.json())
         .then(data => {
-            const recipesList = document.getElementById('recipesList');
-            recipesList.innerHTML = ''; // Clear previous results
-
-            if (data.meals === null) {
-                recipesList.innerHTML = `<p>No recipes found</p>`;
+            if (data.cod === 200) {
+                displayWeather(data);
             } else {
-                data.meals.forEach(recipe => {
-                    const recipeElement = document.createElement('div');
-                    recipeElement.classList.add('recipe');
-                    recipeElement.innerHTML = `
-                        <img src="${recipe.strMealThumb}" alt="${recipe.strMeal}">
-                        <h3>${recipe.strMeal}</h3>
-                        <p><strong>Category:</strong> ${recipe.strCategory}</p>
-                        <p><strong>Area:</strong> ${recipe.strArea}</p>
-                    `;
-                    recipesList.appendChild(recipeElement);
-                });
+                document.getElementById('weatherDisplay').innerHTML = `<p>City not found!</p>`;
             }
         })
         .catch(error => {
-            alert(error.message);
+            console.error('Error fetching weather data:', error);
         });
-});
+}
+
+function displayWeather(data) {
+    const weatherDisplay = document.getElementById('weatherDisplay');
+    weatherDisplay.innerHTML = `
+        <h2>${data.name}, ${data.sys.country}</h2>
+        <p>Temperature: ${data.main.temp}°C</p>
+        <p>Weather: ${data.weather[0].description}</p>
+        <p>Humidity: ${data.main.humidity}%</p>
+        <p>Wind Speed: ${data.wind.speed} m/s</p>
+    `;
+}
